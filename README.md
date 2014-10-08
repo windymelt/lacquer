@@ -1,2 +1,4 @@
-# Lacquer
-HTTP proxy by Scala, Spray
+lacquer
+=======
+
+scala proxy
