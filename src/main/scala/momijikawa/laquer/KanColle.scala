@@ -6,7 +6,7 @@ import scalaz._
 import Scalaz._
 
 object KanColle {
-  def kancolleAnalyze(message: HttpRequest): Option[HttpResponse ⇒ KanColleMessage] = {
+  def kanColleAnalyze(message: HttpRequest): Option[HttpResponse ⇒ KanColleMessage] = {
     if ("/kcsapi/".r.findFirstIn(message.uri.path.toString()).isEmpty) { return None }
     PortConverter(message) match {
       case -\/(converter) ⇒ Some(converter)

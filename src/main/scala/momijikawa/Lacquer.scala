@@ -22,7 +22,7 @@ class Lacquer extends HttpServiceActor {
 
   val route: Route = (ctx: RequestContext) ⇒ {
     println(ctx.request.uri)
-    val analyze = KanColle.kancolleAnalyze(ctx.request)
+    val analyze = KanColle.kanColleAnalyze(ctx.request)
     val fetchedResponse = cache.useCache(ctx)
     analyze match {
       case Some(converter: (HttpResponse ⇒ KanColleMessage)) ⇒
