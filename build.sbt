@@ -38,7 +38,8 @@ libraryDependencies ++= Seq(
   "io.spray" % "spray-caching" % "1.2.1",
   "io.spray" % "spray-routing" % "1.2.1",
   "io.spray" %%  "spray-json" % "1.2.6",
-  "org.jvnet.mimepull" % "mimepull" % "i.9.4"
+  "org.jvnet.mimepull" % "mimepull" % "i.9.4",
+  "org.json4s" %% "json4s-native" % "3.2.10"
 )
 
 initialCommands := "import momijikawa.lacquer._"
