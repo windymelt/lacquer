@@ -1,6 +1,6 @@
-package momijikawa.laquer
+package momijikawa.lacquer
 
-import momijikawa.laquer.KanColleMessage.{ KanColleMessage, PortConverter }
+import momijikawa.lacquer.KanColleMessage.{ KanColleMessage, PortConverter }
 import spray.http.{ HttpRequest, HttpResponse }
 import scalaz._
 import Scalaz._
@@ -12,5 +12,10 @@ object KanColle {
       case -\/(converter) ⇒ Some(converter)
       case \/-(_)         ⇒ None
     }
+  }
+  def kanColleMainWindow: String = {
+    """<html>
+      |
+    """.stripMargin
   }
 }

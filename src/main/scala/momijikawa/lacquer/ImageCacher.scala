@@ -1,4 +1,4 @@
-package momijikawa.laquer
+package momijikawa.lacquer
 
 import akka.actor.ActorSystem
 import akka.io.IO
