@@ -23,14 +23,14 @@ class KanColleWebSocketWorker(val serverConnection: ActorRef) extends HttpServic
       sender ! x
 
     case Push(msg) ⇒
-      log.info("sending", msg)
+      log.info("Worker is sending data...", msg)
       send(TextFrame(msg))
 
     case x: FrameCommandFailed ⇒
       log.error("frame command failed", x)
 
     case x: HttpRequest ⇒
-
+    case unknown        ⇒ log.warning("Worker has received unknown message: " + unknown.toString)
   }
 
   def businessLogicNoUpgrade: Receive = {

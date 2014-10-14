@@ -16,7 +16,7 @@ class KanColleLacquer(wsServer: ActorRef) extends Lacquer {
         fetch(ctx).onSuccess {
           case response: HttpResponse ⇒
             val kanColleMessage = converter(response)
-            log.info(kanColleMessage.toString)
+            log.info(kanColleMessage.toString.take(100))
             wsServer ! kanColleMessage
         }
       case None ⇒
