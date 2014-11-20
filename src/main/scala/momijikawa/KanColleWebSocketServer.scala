@@ -1,6 +1,6 @@
 package momijikawa
 
-import akka.actor.{ ActorSystem, Actor, Props, ActorLogging, ActorRef, ActorRefFactory }
+import akka.actor._
 import akka.agent.Agent
 import akka.io.IO
 import momijikawa.KanColleWebSocketServer.Push
@@ -32,6 +32,7 @@ class KanColleWebSocketServer extends Actor with ActorLogging {
       val conn = context.actorOf(KanColleWebSocketWorker.props(serverConnection))
       connections = connections :+ conn
       serverConnection ! Http.Register(conn)
+      context.watch(conn)
       // api_start2, portのキャッシュがあるときは、新規着信の扱いにしてデータをクライアントに送ってあげる。
       // クライアント再接続時のリロードの手間を省くため。
       apiStart2Cache().foreach {
@@ -49,6 +50,10 @@ class KanColleWebSocketServer extends Actor with ActorLogging {
     case Http.Closed ⇒
       log.info("ws disconnected")
       connections = connections.filterNot(_ == sender())
+    case Terminated(actor) ⇒
+      // 切断したコネクションのアクターをリストから外す
+      connections = connections.filterNot(_ == actor)
+
     case message: Port ⇒
       log.info("Updating port data...")
       portCache.alter { _ ⇒ Some(message) } foreach { msg: Option[Port] ⇒ log.info(s"Now, port cache is ${msg.toString.take(200)}") }

@@ -2,6 +2,7 @@ package momijikawa
 
 import akka.actor.{ ActorSystem, Actor, Props, ActorLogging, ActorRef, ActorRefFactory }
 import akka.io.IO
+import akka.io.Tcp.{ Aborted, Closed }
 import momijikawa.KanColleWebSocketServer.Push
 import spray.can.Http
 import spray.can.server.UHttp
@@ -30,7 +31,10 @@ class KanColleWebSocketWorker(val serverConnection: ActorRef) extends HttpServic
       log.error("frame command failed", x)
 
     case x: HttpRequest ⇒
-    case unknown        ⇒ log.warning("Worker has received unknown message: " + unknown.toString)
+    case Closed | Aborted ⇒
+      context.stop(self)
+
+    case unknown ⇒ log.warning("Worker has received unknown message: " + unknown.toString)
   }
 
   def businessLogicNoUpgrade: Receive = {

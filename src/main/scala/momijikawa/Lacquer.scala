@@ -17,7 +17,7 @@ class Lacquer extends HttpServiceActor with ActorLogging {
   self: Actor ⇒
   implicit val actorSystem = this.context.system
   implicit val executionContext = actorSystem.dispatcher
-  implicit val timeout: Timeout = 5 seconds
+  implicit val timeout: Timeout = 1 minutes
 
   val cache = new ImageCacher
 
