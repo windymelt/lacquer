@@ -54,3 +54,5 @@ publishTo := Some(Resolver.file("lacquer",file(Path.userHome.absolutePath+"/.m2/
 testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "junitxml", "console")
 
 parallelExecution in Test := false
+
+fork in run := true // 一度runしても中断してプロンプトに戻れるようにする
