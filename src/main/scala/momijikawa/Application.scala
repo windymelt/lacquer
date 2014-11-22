@@ -11,7 +11,7 @@ import spray.can.Http.ClientConnectionType
 
 object Application extends App {
   override def main(args: Array[String]) = {
-    implicit val timeout: Timeout = 5 seconds
+    implicit val timeout: Timeout = 1 minutes
     val wsSystem = ActorSystem("ws")
     val lacquerSystem = ActorSystem("lacquer")
 
