@@ -56,3 +56,5 @@ testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "junitxml", "consol
 parallelExecution in Test := false
 
 fork in run := true // 一度runしても中断してプロンプトに戻れるようにする
+
+testOptions in Test += Tests.Argument("junitxml", "html", "console")
