@@ -59,4 +59,4 @@ fork in run := true // 一度runしても中断してプロンプトに戻れる
 
 testOptions in Test += Tests.Argument("junitxml", "html", "console")
 
-assemblyJarName in assembly := s"${name.value}-${version.value}.jar"
+assemblyJarName in assembly := s"lacquer-${version.value}.jar"
