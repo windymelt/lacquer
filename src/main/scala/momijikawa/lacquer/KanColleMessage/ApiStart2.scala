@@ -1,8 +1,8 @@
 package momijikawa.lacquer.KanColleMessage
 
-import spray.http.{ HttpRequest, HttpResponse }
+import spray.http.{HttpRequest, HttpResponse}
+
 import scalaz._
-import Scalaz._
 
 case class ApiStart2(jsonString: String) extends KanColleMessage
 
@@ -17,7 +17,6 @@ object ApiStart2Converter extends KanColleMessageConverter {
     }
   }
   def response2Message(response: HttpResponse): ApiStart2 = {
-    val jsonString = response.entity.data.asString.substring(7)
-    ApiStart2(jsonString)
+    ApiStart2(getJsonString(response))
   }
 }

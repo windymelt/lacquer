@@ -2,20 +2,21 @@ package momijikawa.lacquer
 
 import akka.actor.ActorSystem
 import akka.io.IO
+import akka.pattern.ask
 import akka.util.Timeout
-import spray.caching.{ Cache, LruCache }
+import spray.caching.{Cache, LruCache}
 import spray.can.Http
 import spray.http.HttpResponse
 import spray.routing.RequestContext
-import scalaz._
-import Scalaz._
-import akka.pattern.ask
+
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scalaz.Scalaz._
+import scalaz._
 
 class ImageCacher(implicit val system: ActorSystem) {
   implicit val executionContext = system.dispatcher
-  implicit val timeout: Timeout = 5 seconds
+  implicit val timeout: Timeout = 1 minutes
 
   val cacheEverything: Cache[HttpResponse] = LruCache()
 

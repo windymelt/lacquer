@@ -12,8 +12,6 @@ resolvers += "Momijikawa Maven repository on GitHub" at "http://windymelt.github
 
 resolvers += "spray repo" at "http://repo.spray.io"
 
-scalariformSettings
-
 org.scalastyle.sbt.ScalastylePlugin.Settings
 
 ScctPlugin.instrumentSettings

@@ -1,16 +1,19 @@
 package momijikawa
 
 import akka.actor.ActorRef
-import BasicLacquerConfiguration._
-import KanColleLacquerUtil._
+import momijikawa.BasicLacquerConfiguration._
+import momijikawa.KanColleLacquerUtil._
 import momijikawa.lacquer.KanColle
 import momijikawa.lacquer.KanColleMessage.KanColleMessage
-import spray.http.{ HttpHeaders, HttpHeader, Uri, HttpResponse }
+import spray.http.HttpResponse
 import spray.routing.RequestContext
+
+import scalaz.Scalaz._
 import scalaz._
-import Scalaz._
 
 class KanColleLacquer(wsServer: ActorRef) extends Lacquer {
+  // URL書き換え関数
+  // ElectricEyeにアクセスできる短縮URLを提供する
   val spoofElectricEyeURL: PartialFunction[RequestContext, RequestContext] =
     spoofURL(kanColleElectricEyeHookHostFrom)(kanColleElectricEyeHookHostTo)
 
@@ -20,19 +23,22 @@ class KanColleLacquer(wsServer: ActorRef) extends Lacquer {
     case anything: RequestContext ⇒ anything
   }
 
+  // HTTPリクエストを受け付けるルーティング
   override def route = (ctx: RequestContext) ⇒ {
-    val analyze = KanColle.kanColleAnalyze(ctx.request)
     // 特定のコンテキストを書き換える
+    // ヒットしなければ何も書き換えない
     val spoofedCtx = ctx |> (spoofElectricEyeURL orElse spoofNothing)
+
     super.route(spoofedCtx)
 
-    analyze match {
-      case Some(converter: (HttpResponse ⇒ KanColleMessage)) ⇒
+    KanColle.kanColleAnalyze(ctx.request) match {
+      case Some(genKanColleMessage: (HttpResponse ⇒ KanColleMessage)) ⇒
+        // クライアントが要求するページをフェッチし、メッセージに変換してWebSocketで送信する
         fetch(ctx).onSuccess {
           case response: HttpResponse ⇒
-            val kanColleMessage = converter(response)
-            log.info(kanColleMessage.toString.take(100))
-            wsServer ! kanColleMessage
+            val wsMessage = genKanColleMessage(response)
+            log.info(wsMessage.toString.take(100))
+            wsServer ! wsMessage
         }
       case None ⇒
     }
