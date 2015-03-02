@@ -1,22 +1,26 @@
 package momijikawa.lacquer
 
-import momijikawa.lacquer.KanColleMessage.{ApiStart2Converter, KanColleMessage, PortConverter}
-import spray.http.{HttpRequest, HttpResponse}
+import momijikawa.lacquer.KanColleMessage.{ ApiStart2Converter, KanColleMessage, PortConverter }
+import spray.http.{ HttpRequest, HttpResponse, Uri }
 
 import scalaz._
 import Scalaz._
 
 object KanColle {
-  def kanColleAnalyze(message: HttpRequest): Option[HttpResponse ⇒ KanColleMessage] = {
+  def extractRequest(message: HttpRequest): Option[HttpResponse ⇒ KanColleMessage] = {
     // "/kcsapi/"が含まれていなければ弾く
-    if ("/kcsapi/".r.findFirstIn(message.uri.path.toString()).isEmpty) { return None }
+    if (!isKanColleUri(message.uri)) { return None }
 
     // port, apistart2の順に合致するか調べる
-    PortConverter(message) >> ApiStart2Converter(message) match {
+    val combinedConverter = PortConverter(message) >> ApiStart2Converter(message)
+    combinedConverter match {
       case -\/(converter: (HttpResponse ⇒ KanColleMessage)) ⇒ Some(converter)
       case \/-(_) ⇒ None
     }
   }
+
+  private def isKanColleUri(uri: Uri) = "/kcsapi/".r.findFirstIn(uri.path.toString()).isDefined
+
   def kanColleMainWindow: String = {
     """<html>
       |

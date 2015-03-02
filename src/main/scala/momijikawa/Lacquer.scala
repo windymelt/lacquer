@@ -1,12 +1,12 @@
 package momijikawa
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{ Actor, ActorLogging }
 import akka.util.Timeout
 import momijikawa.lacquer.ImageCacher
 import spray.http.HttpResponse
 import spray.httpx.marshalling.MetaToResponseMarshallers
 import spray.httpx.marshalling.MetaToResponseMarshallers.futureMarshaller
-import spray.routing.{HttpServiceActor, RequestContext, Route}
+import spray.routing.{ HttpServiceActor, RequestContext, Route }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -21,21 +21,25 @@ class Lacquer extends HttpServiceActor with ActorLogging {
 
   val cache = new ImageCacher
 
+  def receive: Receive = runRoute(route)
+
   def route: Route = (ctx: RequestContext) ⇒ {
-    println(ctx.request.uri)
-    ctx.request.headers.find(_.name == "Host") >>= {
-      (header: spray.http.HttpHeader) ⇒
-        println("Request host: " + header.value).some
-    }
-    println(
-      s"""Protocol: ${ctx.request.protocol.value} <${ctx.request.method.value}>
-         | -> ${ctx.request.uri.authority.host.address}:${ctx.request.uri.authority.port}""".stripMargin)
+    printReqInfo(ctx)
     ctx.complete(fetch(ctx))
   }
 
-  protected def fetch(ctx: RequestContext): Future[HttpResponse] = {
-    cache.useCache(ctx)
+  def printReqInfo(ctx: RequestContext) = {
+    println(ctx.request.uri)
+    println(
+      s"""Protocol: ${ctx.request.protocol.value} <${ctx.request.method.value}>
+       | -> ${ctx.request.uri.authority.host.address}:${ctx.request.uri.authority.port}""".stripMargin)
+    ctx.request.headers.find(_.name == "Host") foreach {
+      (header: spray.http.HttpHeader) ⇒
+        println("Request host: " + header.value)
+    }
   }
 
-  def receive: Receive = runRoute(route)
+  protected def fetch(ctx: RequestContext): Future[HttpResponse] = {
+    cache.processCtx(ctx)
+  }
 }

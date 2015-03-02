@@ -31,7 +31,7 @@ class KanColleLacquer(wsServer: ActorRef) extends Lacquer {
 
     super.route(spoofedCtx)
 
-    KanColle.kanColleAnalyze(ctx.request) match {
+    KanColle.extractRequest(ctx.request) match {
       case Some(genKanColleMessage: (HttpResponse ⇒ KanColleMessage)) ⇒
         // クライアントが要求するページをフェッチし、メッセージに変換してWebSocketで送信する
         fetch(ctx).onSuccess {

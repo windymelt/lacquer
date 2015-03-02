@@ -1,6 +1,6 @@
 package momijikawa.lacquer.KanColleMessage
 
-import spray.http.{HttpRequest, HttpResponse}
+import spray.http.{ HttpRequest, HttpResponse }
 
 import scalaz._
 
@@ -115,12 +115,8 @@ object PortConverter extends KanColleMessageConverter {
   import org.json4s._
   implicit val formats = DefaultFormats
 
-  def apply(message: HttpRequest): \/[HttpResponse ⇒ KanColleMessage, HttpRequest] = {
-    """kcsapi\/api_port\/port""".r.findFirstIn(message.uri.path.toString()) match {
-      case Some(_) ⇒ -\/(response2Message)
-      case None    ⇒ \/-(message)
-    }
-  }
+  val uriRegex = """kcsapi\/api_port\/port"""
+
   def response2Message(response: HttpResponse): Port = {
     Port(getJsonString(response))
   }

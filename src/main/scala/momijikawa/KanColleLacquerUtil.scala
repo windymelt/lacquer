@@ -1,6 +1,6 @@
 package momijikawa
 
-import spray.http.{HttpHeader, HttpHeaders, Uri}
+import spray.http.{ HttpHeader, HttpHeaders, Uri }
 import spray.routing.RequestContext
 
 object KanColleLacquerUtil {

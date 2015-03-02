@@ -1,6 +1,6 @@
 package momijikawa
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ ActorSystem, Props }
 import akka.io.IO
 import akka.util.Timeout
 import spray.can.Http
