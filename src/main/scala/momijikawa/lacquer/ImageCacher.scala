@@ -31,7 +31,7 @@ class ImageCacher(implicit val system: ActorSystem) {
   private def cacheable(resp: HttpResponse): Boolean = {
     val isCacheProhibited = getHeaderValue("Cache-Control", from = resp) ∘ isAMemberOf(noCacheFlag) getOrElse false
     val hasProhibitPragma = getHeaderValue("Pragma", from = resp) ∘
-      {headerValueString ⇒ headerValueString.contains("no-cache") } getOrElse false
+      { headerValueString ⇒ headerValueString.contains("no-cache") } getOrElse false
 
     nor(isCacheProhibited :: hasProhibitPragma :: Nil)
   }
