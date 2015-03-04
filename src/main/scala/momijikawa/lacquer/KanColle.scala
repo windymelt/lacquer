@@ -1,6 +1,6 @@
 package momijikawa.lacquer
 
-import momijikawa.lacquer.KanColleMessage.{ ApiStart2Converter, KanColleMessage, PortConverter }
+import momijikawa.lacquer.KanColleMessage.{ ApiStart2Converter, KanColleMessage, PortConverter, Slot_itemConverter }
 import spray.http.{ HttpRequest, HttpResponse, Uri }
 
 import scalaz._
@@ -12,7 +12,7 @@ object KanColle {
     if (!isKanColleUri(message.uri)) { return None }
 
     // port, apistart2の順に合致するか調べる
-    val combinedConverter = PortConverter(message) >> ApiStart2Converter(message)
+    val combinedConverter = PortConverter(message) >> ApiStart2Converter(message) >> Slot_itemConverter(message)
     combinedConverter match {
       case -\/(converter: (HttpResponse ⇒ KanColleMessage)) ⇒ Some(converter)
       case \/-(_) ⇒ None
