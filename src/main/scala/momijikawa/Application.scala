@@ -5,17 +5,20 @@ import akka.io.IO
 import akka.util.Timeout
 import spray.can.Http
 import spray.can.server.UHttp
+import com.typesafe.config._
 
 import scala.concurrent.duration._
 
 object Application extends App {
-  override def main(args: Array[String]) = runServer()
-  def runServer() = {
+  override def main(args: Array[String]) = runServer(ConfigFactory.defaultReference())
+  def runServer(config: Config) = {
     implicit val timeout: Timeout = 1 minutes
 
-    val hostName = "0.0.0.0"
-    val webSocketPort = 8081
-    val proxyPort = 8082
+    config.checkValid(ConfigFactory.defaultReference(), "lacquer")
+
+    val hostName = config.getString("lacquer.host")
+    val webSocketPort = config.getInt("lacquer.websocket.port")
+    val proxyPort = config.getInt("lacquer.proxy.port")
 
     val wsSystem = ActorSystem("ws")
     val lacquerSystem = ActorSystem("lacquer")
@@ -28,12 +31,14 @@ object Application extends App {
   }
   def runWebSocket(host: String, port: Int, system: ActorSystem) = {
     // ブラウザアプリケーションにデータを送信するWebSocketを扱うサーバを作成
+    system.log.info(s"Preparing websocket on $host:$port} ...", host, port)
     val wsServer = system.actorOf(KanColleWebSocketServer.props(), "websocket")
     IO(UHttp)(system) ! Http.Bind(wsServer, host, port = port)
     wsServer
   }
   def runProxy(webSocketServer: ActorRef, host: String, port: Int, system: ActorSystem) = {
     // 艦これの通信をキャプチャするプロキシを作成
+    system.log.info(s"Preparing HTTP proxy on $host:$port ...", host, port)
     val httpProxyServer = system.actorOf(Props(classOf[KanColleLacquer], webSocketServer))
     IO(Http)(system) ! Http.Bind(httpProxyServer, host, port = port)
     httpProxyServer
