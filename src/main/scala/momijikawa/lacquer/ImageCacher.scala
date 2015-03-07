@@ -44,6 +44,8 @@ class ImageCacher(implicit val system: ActorSystem) {
   }
 
   def processCtx(ctx: RequestContext): Future[HttpResponse] = {
+    import scala.util.{ Success, Failure }
+
     cacheEverything.get(ctx.request.message) match {
       case Some(cache: Future[HttpResponse]) ⇒
         println("found cache")
@@ -53,9 +55,12 @@ class ImageCacher(implicit val system: ActorSystem) {
         println("no cache")
         val response: Future[HttpResponse] = (IO(Http) ? ctx.request).mapTo[HttpResponse]
 
-        response.onSuccess {
-          case resp if cacheable(resp) && isImage(resp) ⇒
-            cacheEverything(ctx.request.message, () ⇒ Future(resp))
+        response.onComplete {
+          case Success(resp) ⇒
+          case resp if cacheable(resp.get) && isImage(resp.get) ⇒
+            cacheEverything(ctx.request.message, () ⇒ Future(resp.get))
+          case Failure(err) ⇒
+            system.log.error(err.toString)
         }
 
         response
