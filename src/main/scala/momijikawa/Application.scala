@@ -1,6 +1,6 @@
 package momijikawa
 
-import akka.actor.{ ActorSystem, Props, ActorRef }
+import akka.actor._
 import akka.io.IO
 import akka.util.Timeout
 import spray.can.Http
@@ -27,11 +27,13 @@ object Application extends App {
     lacquerSystem.log.info("Proxy system has started.")
 
     val wsRef = runWebSocket(hostName, webSocketPort, wsSystem)
-    runProxy(wsRef, hostName, proxyPort, lacquerSystem)
+    val proxyRef = runProxy(wsRef, hostName, proxyPort, lacquerSystem)
+
+    (wsSystem, wsRef, lacquerSystem, proxyRef)
   }
   def runWebSocket(host: String, port: Int, system: ActorSystem) = {
     // ブラウザアプリケーションにデータを送信するWebSocketを扱うサーバを作成
-    system.log.info(s"Preparing websocket on $host:$port} ...", host, port)
+    system.log.info(s"Preparing websocket on $host:$port ...", host, port)
     val wsServer = system.actorOf(KanColleWebSocketServer.props(), "websocket")
     IO(UHttp)(system) ! Http.Bind(wsServer, host, port = port)
     wsServer
@@ -42,5 +44,16 @@ object Application extends App {
     val httpProxyServer = system.actorOf(Props(classOf[KanColleLacquer], webSocketServer))
     IO(Http)(system) ! Http.Bind(httpProxyServer, host, port = port)
     httpProxyServer
+  }
+  def stopServer(wsSystem: ActorSystem, wsRef: ActorRef, proxySystem: ActorSystem, proxyRef: ActorRef) = {
+    wsRef ! PoisonPill
+    wsSystem.awaitTermination()
+    println("Websocket uptime: " + wsSystem.uptime)
+    wsSystem.shutdown()
+
+    proxyRef ! PoisonPill
+    proxySystem.awaitTermination()
+    println("Proxy uptime: " + proxySystem.uptime)
+    proxySystem.shutdown()
   }
 }
