@@ -1,8 +1,8 @@
-package test.momijikawa
+package momijikawa.lacquer
 
+import momijikawa.lacquer.KanColleLacquerUtil._
 import org.specs2.mutable._
 import spray.http.HttpHeaders
-import momijikawa.KanColleLacquerUtil._
 
 class KanColleLacquerUtilSpec extends Specification {
   "modHeader" should {

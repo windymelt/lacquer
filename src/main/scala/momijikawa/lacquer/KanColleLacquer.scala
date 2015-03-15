@@ -1,15 +1,13 @@
-package momijikawa
+package momijikawa.lacquer
 
 import akka.actor.ActorRef
-import momijikawa.BasicLacquerConfiguration._
-import momijikawa.KanColleLacquerUtil._
-import momijikawa.lacquer.KanColle
-import momijikawa.lacquer.KanColleMessage.KanColleMessage
+import KanColleLacquerUtil._
+import BasicLacquerConfiguration._
+import KanColleMessage.KanColleMessage
 import spray.http.HttpResponse
 import spray.routing.RequestContext
 
 import scalaz.Scalaz._
-import scalaz._
 
 class KanColleLacquer(wsServer: ActorRef) extends Lacquer {
   // URL書き換え関数

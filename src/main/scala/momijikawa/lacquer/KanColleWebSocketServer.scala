@@ -1,17 +1,9 @@
-package momijikawa
+package momijikawa.lacquer
 
 import akka.actor._
 import akka.agent.Agent
-import akka.io.IO
-import momijikawa.KanColleWebSocketServer.Push
-import momijikawa.lacquer.KanColleMessage.{ Slot_item, ApiStart2, Port }
+import KanColleMessage.{ ApiStart2, Port, Slot_item }
 import spray.can.Http
-import spray.can.server.UHttp
-import spray.can.websocket
-import spray.can.websocket.frame.{ BinaryFrame, TextFrame }
-import spray.http.HttpRequest
-import spray.can.websocket.FrameCommandFailed
-import spray.routing.HttpServiceActor
 
 object KanColleWebSocketServer {
   final case class Push(msg: String)
@@ -19,6 +11,7 @@ object KanColleWebSocketServer {
 }
 
 class KanColleWebSocketServer extends Actor with ActorLogging {
+  import KanColleWebSocketServer.Push
   implicit val execContext = context.dispatcher.prepare()
 
   var connections = List[ActorRef]()

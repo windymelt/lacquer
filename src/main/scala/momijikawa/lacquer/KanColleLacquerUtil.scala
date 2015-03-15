@@ -1,4 +1,4 @@
-package momijikawa
+package momijikawa.lacquer
 
 import spray.http.{ HttpHeader, HttpHeaders, Uri }
 import spray.routing.RequestContext

@@ -1,17 +1,13 @@
-package momijikawa
+package momijikawa.lacquer
 
 import akka.actor.{ Actor, ActorLogging }
 import akka.util.Timeout
-import momijikawa.lacquer.ImageCacher
 import spray.http.HttpResponse
-import spray.httpx.marshalling.MetaToResponseMarshallers
 import spray.httpx.marshalling.MetaToResponseMarshallers.futureMarshaller
 import spray.routing.{ HttpServiceActor, RequestContext, Route }
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scalaz.Scalaz._
-import scalaz._
 
 class Lacquer extends HttpServiceActor with ActorLogging {
   self: Actor ⇒

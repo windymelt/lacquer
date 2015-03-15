@@ -1,11 +1,11 @@
-package momijikawa
+package momijikawa.lacquer
 
 import akka.actor._
 import akka.io.IO
 import akka.util.Timeout
+import com.typesafe.config._
 import spray.can.Http
 import spray.can.server.UHttp
-import com.typesafe.config._
 
 import scala.concurrent.duration._
 

@@ -1,4 +1,4 @@
-package momijikawa
+package momijikawa.lacquer
 
 object BasicLacquerConfiguration {
   val kanColleElectricEyeHookHostFrom = "kan.colle"
