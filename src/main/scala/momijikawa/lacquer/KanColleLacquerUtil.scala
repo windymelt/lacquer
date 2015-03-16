@@ -1,6 +1,6 @@
-package momijikawa
+package momijikawa.lacquer
 
-import spray.http.{ Uri, HttpHeaders, HttpHeader }
+import spray.http.{ HttpHeader, HttpHeaders, Uri }
 import spray.routing.RequestContext
 
 object KanColleLacquerUtil {
@@ -12,6 +12,7 @@ object KanColleLacquerUtil {
     case other ⇒ other
   }
 
+  // リクエストのURLを書き換える関数
   val spoofURL: String ⇒ String ⇒ PartialFunction[RequestContext, RequestContext] = fromHost ⇒ toHost ⇒ {
     case c: RequestContext if c.request.uri.authority.host.address == fromHost ⇒
       // 特定のホストへのアクセスリクエストを別のホストへのリクエストに書き換えて、ヘッダを書き換えてエラーを回避する

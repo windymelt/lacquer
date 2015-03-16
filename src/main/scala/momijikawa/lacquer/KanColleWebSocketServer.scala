@@ -1,17 +1,9 @@
-package momijikawa
+package momijikawa.lacquer
 
 import akka.actor._
 import akka.agent.Agent
-import akka.io.IO
-import momijikawa.KanColleWebSocketServer.Push
-import momijikawa.lacquer.KanColleMessage.{ ApiStart2, Port }
+import KanColleMessage.{ ApiStart2, Port, Slot_item }
 import spray.can.Http
-import spray.can.server.UHttp
-import spray.can.websocket
-import spray.can.websocket.frame.{ BinaryFrame, TextFrame }
-import spray.http.HttpRequest
-import spray.can.websocket.FrameCommandFailed
-import spray.routing.HttpServiceActor
 
 object KanColleWebSocketServer {
   final case class Push(msg: String)
@@ -19,11 +11,13 @@ object KanColleWebSocketServer {
 }
 
 class KanColleWebSocketServer extends Actor with ActorLogging {
+  import KanColleWebSocketServer.Push
   implicit val execContext = context.dispatcher.prepare()
 
   var connections = List[ActorRef]()
   val apiStart2Cache = Agent[Option[ApiStart2]](None)
   val portCache = Agent[Option[Port]](None)
+  val slot_itemCache = Agent[Option[Slot_item]](None)
 
   def receive = {
     case Http.Connected(remoteAddress, localAddress) ⇒
@@ -47,6 +41,12 @@ class KanColleWebSocketServer extends Actor with ActorLogging {
           Thread.sleep(200)
           conn ! Push(s"""{"api":"port","data":${port.jsonString}}""")
       }
+      slot_itemCache().foreach {
+        slot_item ⇒
+          log.info("Re-sending slot_item...")
+          Thread.sleep(200)
+          conn ! Push(s"""{"api":"slot_item","data":${slot_item.jsonString}}""")
+      }
     case Http.Closed ⇒
       log.info("ws disconnected")
       connections = connections.filterNot(_ == sender())
@@ -67,6 +67,13 @@ class KanColleWebSocketServer extends Actor with ActorLogging {
       connections.map {
         conn ⇒
           conn ! Push(s"""{"api":"api_start2","data":${message.jsonString}}""")
+      }
+    case message: Slot_item ⇒
+      log.info("Updating slot_item data...")
+      slot_itemCache.alter { _ ⇒ Some(message) } foreach { msg: Option[Slot_item] ⇒ log.info(s"Now, slot_item cache is ${msg.toString.take(200)}") }
+      connections.map {
+        conn ⇒
+          conn ! Push(s"""{"api":"slot_item","data":${message.jsonString}}""")
       }
   }
 }

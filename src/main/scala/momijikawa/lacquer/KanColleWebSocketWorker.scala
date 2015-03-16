@@ -1,15 +1,12 @@
-package momijikawa
+package momijikawa.lacquer
 
-import akka.actor.{ ActorSystem, Actor, Props, ActorLogging, ActorRef, ActorRefFactory }
-import akka.io.IO
+import akka.actor.{ ActorRef, ActorRefFactory, Props }
 import akka.io.Tcp.{ Aborted, Closed }
-import momijikawa.KanColleWebSocketServer.Push
-import spray.can.Http
-import spray.can.server.UHttp
+import momijikawa.lacquer.KanColleWebSocketServer.Push
 import spray.can.websocket
+import spray.can.websocket.FrameCommandFailed
 import spray.can.websocket.frame.{ BinaryFrame, TextFrame }
 import spray.http.HttpRequest
-import spray.can.websocket.FrameCommandFailed
 import spray.routing.HttpServiceActor
 
 object KanColleWebSocketWorker {

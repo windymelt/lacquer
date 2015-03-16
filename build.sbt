@@ -8,7 +8,7 @@ name := "Lacquer"
 organization := "momijikawa"
 
 // プロジェクトのバージョン
-version := "0.1"
+version := "0.3.1"
 
 // 使用するScalaのバージョン
 scalaVersion := "2.10.4"
@@ -53,7 +53,7 @@ libraryDependencies ++= Seq(
   "io.spray" %% "spray-caching" % "1.3.1",
   "io.spray" %% "spray-routing" % "1.3.1",
   "io.spray" %%  "spray-json" % "1.3.0",
-  "org.jvnet.mimepull" % "mimepull" % "i.9.4",
+  "org.jvnet.mimepull" % "mimepull" % "1.9.4",
   "org.json4s" %% "json4s-native" % "3.2.10",
   "com.wandoulabs.akka" %% "spray-websocket" % "0.1.3"
 )

@@ -2,45 +2,50 @@ package momijikawa.lacquer
 
 import akka.actor.ActorSystem
 import akka.io.IO
+import akka.pattern.ask
 import akka.util.Timeout
 import spray.caching.{ Cache, LruCache }
 import spray.can.Http
 import spray.http.HttpResponse
 import spray.routing.RequestContext
-import scalaz._
-import Scalaz._
-import akka.pattern.ask
+
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scalaz.Scalaz._
+import scalaz._
 
 class ImageCacher(implicit val system: ActorSystem) {
   implicit val executionContext = system.dispatcher
-  implicit val timeout: Timeout = 5 seconds
+  implicit val timeout: Timeout = 1 minutes
 
   val cacheEverything: Cache[HttpResponse] = LruCache()
 
   private val noCacheFlag = Seq("private", "no-cache", "no-store", "must-revalidate")
 
+  private def nor(seq: Seq[Boolean]) = !seq.reduce(_ || _)
+  private def isAMemberOf(seq: Seq[_])(x: Any) = seq.contains(x)
+
+  private def getHeaderValue(name: String, from: HttpResponse) =
+    from.headers.find(_.name == name) ∘ (header ⇒ header.value)
+
   private def cacheable(resp: HttpResponse): Boolean = {
-    val isCacheProhibited = for (
-      cacheControl ← resp.headers.find(header ⇒ header.name == "Cache-Control")
-    ) yield noCacheFlag.exists(value ⇒ cacheControl.value.contains(value))
+    val isCacheProhibited = getHeaderValue("Cache-Control", from = resp) ∘ isAMemberOf(noCacheFlag) getOrElse false
+    val hasProhibitPragma = getHeaderValue("Pragma", from = resp) ∘
+      { headerValueString ⇒ headerValueString.contains("no-cache") } getOrElse false
 
-    val hasProhibitPragma = for (
-      pragma ← resp.headers.find(header ⇒ header.name == "Pragma")
-    ) yield pragma.value.contains("no-cache")
-
-    !(isCacheProhibited | false || (hasProhibitPragma | false))
+    nor(isCacheProhibited :: hasProhibitPragma :: Nil)
   }
 
   private def isImage(resp: HttpResponse): Boolean = {
-    val responseHasImage = for (
-      contentType ← resp.headers.find(header ⇒ header.name == "Content-Type")
-    ) yield contentType.value.contains("image/")
-    responseHasImage | false
+    val hasImageMime = getHeaderValue("Content-Type", from = resp) ∘
+      { headerValueString ⇒ headerValueString.contains("image/") }
+
+    hasImageMime getOrElse false
   }
 
-  def useCache(ctx: RequestContext): Future[HttpResponse] = {
+  def processCtx(ctx: RequestContext): Future[HttpResponse] = {
+    import scala.util.{ Success, Failure }
+
     cacheEverything.get(ctx.request.message) match {
       case Some(cache: Future[HttpResponse]) ⇒
         println("found cache")
@@ -50,9 +55,12 @@ class ImageCacher(implicit val system: ActorSystem) {
         println("no cache")
         val response: Future[HttpResponse] = (IO(Http) ? ctx.request).mapTo[HttpResponse]
 
-        response.onSuccess {
-          case resp if cacheable(resp) && isImage(resp) ⇒
-            cacheEverything(ctx.request.message, () ⇒ Future(resp))
+        response.onComplete {
+          case Success(resp) ⇒
+          case resp if cacheable(resp.get) && isImage(resp.get) ⇒
+            cacheEverything(ctx.request.message, () ⇒ Future(resp.get))
+          case Failure(err) ⇒
+            system.log.error(err.toString)
         }
 
         response
