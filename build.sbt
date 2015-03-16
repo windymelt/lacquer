@@ -1,21 +1,38 @@
+// build.sbt
+// ScalaのDSLで記述するので、各定義は一行空けること
+
+// プロジェクト名
 name := "Lacquer"
 
+// 組織名; パッケージのトップにつく名称
 organization := "momijikawa"
 
+// プロジェクトのバージョン
 version := "0.3.1"
 
+// 使用するScalaのバージョン
 scalaVersion := "2.10.4"
 
+// パッケージの依存関係を解決するのに用いるMavenレポジトリ
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 resolvers += "Momijikawa Maven repository on GitHub" at "http://windymelt.github.io/repo/"
 
 resolvers += "spray repo" at "http://repo.spray.io"
 
+// コードフォーマッタプラグインscalariformの設定をロード
+// cf. scalariform.sbt
+scalariformSettings
+
+// コーディング規約チェッカプラグインscalastyleの設定をロード
 org.scalastyle.sbt.ScalastylePlugin.Settings
 
+// カバレッジ測定プラグインscctの設定をロード
 ScctPlugin.instrumentSettings
 
+// パッケージの依存性を定義
+// %が2つの定義はレポジトリのディレクトリ構造にscalaのバージョンを含むもの
+// %を2つ書くことで自動的にscalaのバージョンを補完している
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "1.13" % "test",
   "com.typesafe.akka" %% "akka-actor" % "2.3.6",
@@ -41,20 +58,24 @@ libraryDependencies ++= Seq(
   "com.wandoulabs.akka" %% "spray-websocket" % "0.1.3"
 )
 
+// コンソールを呼んだ時に最初に自動的に実行される文
 initialCommands := "import momijikawa.lacquer._"
 
 initialCommands in console := "import scalaz._, Scalaz._"
 
-// Specify publish directory with your environment.
-
+// publishした時の出力先の指定
 publishTo := Some(Resolver.file("lacquer",file(Path.userHome.absolutePath+"/.m2/repository"))(Patterns(true, Resolver.mavenStyleBasePattern)))
 
+// テスト時にJUnitのXMLを出力させる設定
 testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "junitxml", "console")
 
+// テストを並行に実施しない
 parallelExecution in Test := false
 
-fork in run := true // 一度runしても中断してプロンプトに戻れるようにする
+// 一度runしても中断してプロンプトに戻れるようにする
+fork in run := true
 
 testOptions in Test += Tests.Argument("junitxml", "html", "console")
 
+// 実行可能なJARファイルを出力するsbt-assemblyプラグインの設定
 assemblyJarName in assembly := s"lacquer-${version.value}.jar"
