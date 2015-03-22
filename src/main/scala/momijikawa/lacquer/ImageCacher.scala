@@ -1,18 +1,15 @@
 package momijikawa.lacquer
 
 import akka.actor.ActorSystem
-import akka.io.IO
-import akka.pattern.ask
 import akka.util.Timeout
 import spray.caching.{ Cache, LruCache }
-import spray.can.Http
-import spray.http.HttpResponse
+import spray.http._
 import spray.routing.RequestContext
+import spray.client.pipelining._
+import spray.httpx.encoding.Gzip
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scalaz.Scalaz._
-import scalaz._
 
 class ImageCacher(implicit val system: ActorSystem) {
   implicit val executionContext = system.dispatcher
@@ -26,18 +23,17 @@ class ImageCacher(implicit val system: ActorSystem) {
   private def isAMemberOf(seq: Seq[_])(x: Any) = seq.contains(x)
 
   private def getHeaderValue(name: String, from: HttpResponse) =
-    from.headers.find(_.name == name) ∘ (header ⇒ header.value)
+    from.headers.find(_.name == name) map (header ⇒ header.value)
 
   private def cacheable(resp: HttpResponse): Boolean = {
-    val isCacheProhibited = getHeaderValue("Cache-Control", from = resp) ∘ isAMemberOf(noCacheFlag) getOrElse false
-    val hasProhibitPragma = getHeaderValue("Pragma", from = resp) ∘
-      { headerValueString ⇒ headerValueString.contains("no-cache") } getOrElse false
+    val isCacheProhibited = getHeaderValue("Cache-Control", from = resp) exists isAMemberOf(noCacheFlag)
+    val hasProhibitPragma = getHeaderValue("Pragma", from = resp) exists { headerValueString ⇒ headerValueString.contains("no-cache") }
 
     nor(isCacheProhibited :: hasProhibitPragma :: Nil)
   }
 
   private def isImage(resp: HttpResponse): Boolean = {
-    val hasImageMime = getHeaderValue("Content-Type", from = resp) ∘
+    val hasImageMime = getHeaderValue("Content-Type", from = resp) map
       { headerValueString ⇒ headerValueString.contains("image/") }
 
     hasImageMime getOrElse false
@@ -53,7 +49,8 @@ class ImageCacher(implicit val system: ActorSystem) {
 
       case None ⇒
         println("no cache")
-        val response: Future[HttpResponse] = (IO(Http) ? ctx.request).mapTo[HttpResponse]
+        val pipeline: HttpRequest => Future[HttpResponse] = sendReceive ~> decode(Gzip)
+        val response: Future[HttpResponse] = pipeline(ctx.request)
 
         response.onComplete {
           case Success(resp) ⇒
