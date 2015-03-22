@@ -5,6 +5,7 @@ import akka.util.Timeout
 import spray.http.HttpResponse
 import spray.httpx.marshalling.MetaToResponseMarshallers.futureMarshaller
 import spray.routing.{ HttpServiceActor, RequestContext, Route }
+import spray.routing.directives.CompressResponseMagnet
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -19,9 +20,10 @@ class Lacquer extends HttpServiceActor with ActorLogging {
 
   def receive: Receive = runRoute(route)
 
-  def route: Route = (ctx: RequestContext) ⇒ {
-    printReqInfo(ctx)
-    ctx.complete(fetch(ctx))
+  def route: Route = compressResponse(CompressResponseMagnet.fromUnit()) {
+    (ctx: RequestContext) ⇒
+      printReqInfo(ctx)
+      ctx.complete(fetch(ctx))
   }
 
   def printReqInfo(ctx: RequestContext) = {
