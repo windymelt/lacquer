@@ -2,12 +2,15 @@ package momijikawa.lacquer
 
 import akka.actor.{ Actor, ActorLogging }
 import akka.util.Timeout
-import spray.http.HttpResponse
+import spray.client.pipelining._
+import spray.http.{ HttpRequest, HttpResponse }
+import spray.httpx.encoding.Gzip
 import spray.httpx.marshalling.MetaToResponseMarshallers.futureMarshaller
 import spray.routing.{ HttpServiceActor, RequestContext, Route }
 import spray.routing.directives.CompressResponseMagnet
-
+import scala.concurrent.future
 import scala.concurrent.Future
+import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class Lacquer extends HttpServiceActor with ActorLogging {
@@ -38,6 +41,8 @@ class Lacquer extends HttpServiceActor with ActorLogging {
   }
 
   protected def fetch(ctx: RequestContext): Future[HttpResponse] = {
-    cache.processCtx(ctx)
+    val pipeline: HttpRequest ⇒ Future[HttpResponse] = sendReceive ~> decode(Gzip)
+    future(Await.result(pipeline(ctx.request), 1 minutes))
+    //cache.processCtx(ctx)
   }
 }

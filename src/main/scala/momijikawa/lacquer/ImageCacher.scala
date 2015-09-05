@@ -49,7 +49,7 @@ class ImageCacher(implicit val system: ActorSystem) {
 
       case None ⇒
         println("no cache")
-        val pipeline: HttpRequest => Future[HttpResponse] = sendReceive ~> decode(Gzip)
+        val pipeline: HttpRequest ⇒ Future[HttpResponse] = sendReceive ~> decode(Gzip)
         val response: Future[HttpResponse] = pipeline(ctx.request)
 
         response.onComplete {
