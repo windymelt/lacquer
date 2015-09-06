@@ -1,15 +1,26 @@
 package momijikawa.lacquer
 
-import akka.actor.ActorRef
+import akka.actor._
 import KanColleLacquerUtil._
 import BasicLacquerConfiguration._
 import KanColleMessage.KanColleMessage
+import momijikawa.lacquer.kancolleTools.{ ConnectXMPP, XMPPClient }
 import spray.http.HttpResponse
 import spray.routing.RequestContext
+import com.typesafe.config.Config
 
 import scalaz.Scalaz._
 
 class KanColleLacquer(wsServer: ActorRef) extends Lacquer {
+  val system = ActorSystem("KanColleLacquer")
+  val config = system.settings.config
+  val xmpp = system.actorOf(Props[XMPPClient], "xmppclient")
+  if (config.getBoolean("lacquer.xmpp.enabled")) {
+    xmpp ! ConnectXMPP(
+      jid = config.getString("lacquer.xmpp.user"),
+      password = config.getString("lacquer.xmpp.password"),
+      toJid = config.getString("lacquer.xmpp.recipient"))
+  }
   // URL書き換え関数
   // ElectricEyeにアクセスできる短縮URLを提供する
   val spoofElectricEyeURL: PartialFunction[RequestContext, RequestContext] =

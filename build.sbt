@@ -55,12 +55,9 @@ libraryDependencies ++= Seq(
   "io.spray" %%  "spray-json" % "1.3.0",
   "org.jvnet.mimepull" % "mimepull" % "1.9.4",
   "org.json4s" %% "json4s-native" % "3.2.10",
-  "com.wandoulabs.akka" %% "spray-websocket" % "0.1.3"
+  "com.wandoulabs.akka" %% "spray-websocket" % "0.1.3",
+  "us.troutwine" %% "barkety" % "3.2.0"
 )
-
-lazy val root = project.in(file(".")).dependsOn(barketyRepo)
-
-lazy val barketyRepo = uri("git://github.com/Inkp/Barkety.git#2d7a6244909fa86b8f73339eab03b2c6028da816")
 
 // コンソールを呼んだ時に最初に自動的に実行される文
 initialCommands := "import momijikawa.lacquer._"
