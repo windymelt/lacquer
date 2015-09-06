@@ -11,7 +11,7 @@ organization := "momijikawa"
 version := "0.3.1"
 
 // 使用するScalaのバージョン
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.7"
 
 // パッケージの依存関係を解決するのに用いるMavenレポジトリ
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
@@ -34,15 +34,15 @@ ScctPlugin.instrumentSettings
 // %が2つの定義はレポジトリのディレクトリ構造にscalaのバージョンを含むもの
 // %を2つ書くことで自動的にscalaのバージョンを補完している
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2" % "1.13" % "test",
+  "org.specs2" %% "specs2-core" % "3.6.4" % "test",
   "com.typesafe.akka" %% "akka-actor" % "2.3.6",
   "com.typesafe.akka" %% "akka-agent" % "2.3.6",
   "com.typesafe.akka" %% "akka-testkit" % "2.3.6",
   "commons-codec" % "commons-codec" % "1.9",
-  "org.scalaz" %% "scalaz-core" % "7.0.0",
-  "org.scalaz" %% "scalaz-effect" % "7.0.0",
-  "org.scalaz" %% "scalaz-typelevel" % "7.0.0",
-  "org.scalaz" %% "scalaz-scalacheck-binding" % "7.0.0" % "test",
+  "org.scalaz" %% "scalaz-core" % "7.1.3",
+  "org.scalaz" %% "scalaz-effect" % "7.1.3",
+  "org.scalaz" %% "scalaz-typelevel" % "7.1.3",
+  "org.scalaz" %% "scalaz-scalacheck-binding" % "7.1.3" % "test",
   "org.pegdown" % "pegdown" % "1.0.2",
   "junit" % "junit" % "latest.integration" % "test",
   "org.mockito" % "mockito-all" % "1.9.5",
@@ -58,6 +58,10 @@ libraryDependencies ++= Seq(
   "com.wandoulabs.akka" %% "spray-websocket" % "0.1.3"
 )
 
+lazy val root = project.in(file(".")).dependsOn(barketyRepo)
+
+lazy val barketyRepo = uri("git://github.com/Inkp/Barkety.git#2d7a6244909fa86b8f73339eab03b2c6028da816")
+
 // コンソールを呼んだ時に最初に自動的に実行される文
 initialCommands := "import momijikawa.lacquer._"
 
@@ -68,6 +72,9 @@ publishTo := Some(Resolver.file("lacquer",file(Path.userHome.absolutePath+"/.m2/
 
 // テスト時にJUnitのXMLを出力させる設定
 testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "junitxml", "console")
+
+// Specs2のためのオプション
+scalacOptions in Test ++= Seq("-Yrangepos")
 
 // テストを並行に実施しない
 parallelExecution in Test := false
