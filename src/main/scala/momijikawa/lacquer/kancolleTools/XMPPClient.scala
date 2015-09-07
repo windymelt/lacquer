@@ -24,7 +24,7 @@ class XMPPClient extends Actor with ActorLogging {
             case str: String ⇒
               chatter ! OutboundMessage(str)
           })
-          self ! "XMPP client started."
+          self ! context.system.settings.config.getString("lacquer.xmpp.on-boot-message")
         case unknown ⇒ log.error("unknown message received: " + unknown.toString)
       }
   }

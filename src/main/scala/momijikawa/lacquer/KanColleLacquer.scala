@@ -78,6 +78,8 @@ class KanColleLacquer(wsServer: ActorRef) extends Lacquer {
   private def handleTimerRequest(ctx: RequestContext): Option[HttpResponse] = {
     import spray.http.{ HttpRequest, HttpHeaders, AllOrigins }
     import spray.json._
+    import scala.concurrent.duration._
+
     object MyJsonProtocol extends DefaultJsonProtocol {
       implicit val ReservationFormat = jsonFormat3(kancolleTools.Reservation)
     }
@@ -88,6 +90,7 @@ class KanColleLacquer(wsServer: ActorRef) extends Lacquer {
         case HttpRequest(method, uri, headers, entity, protocol) if method.value == "POST" ⇒
           val reservation = entity.data.asString.parseJson.convertTo[kancolleTools.Reservation]
           timer ! reservation
+          xmpp ! config.getString("lacquer.kancolle.timer.on-set-template").format(reservation.title, (reservation.at - compat.Platform.currentTime) / 1000 / 60)
           Some(HttpResponse(entity = "{status: \"ok\"}"))
         case HttpRequest(method, _, _, _, _) if method.value == "OPTIONS" ⇒
           Some(HttpResponse(headers = List(HttpHeaders.`Access-Control-Allow-Origin`(AllOrigins), HttpHeaders.`Access-Control-Allow-Headers`("content-type"))))
